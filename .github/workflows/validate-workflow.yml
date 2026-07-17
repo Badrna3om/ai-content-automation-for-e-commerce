@@ -1,0 +1,49 @@
+name: Validate Public Workflow
+
+on:
+  push:
+    paths:
+      - "workflows/**"
+      - ".github/workflows/validate-workflow.yml"
+  pull_request:
+    paths:
+      - "workflows/**"
+      - ".github/workflows/validate-workflow.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate JSON syntax
+        run: jq empty workflows/ai-content-automation-public.json
+
+      - name: Validate workflow structure
+        run: |
+          jq -e '
+            (.name | type == "string") and
+            (.nodes | type == "array" and length > 0) and
+            (.connections | type == "object") and
+            (.active == false)
+          ' workflows/ai-content-automation-public.json
+
+      - name: Confirm public placeholders
+        run: |
+          grep -q "REPLACE_WITH_PEXELS_API_KEY" workflows/ai-content-automation-public.json
+          grep -q "YOUR_TELEGRAM_CHAT_ID" workflows/ai-content-automation-public.json
+          grep -q "YOUR_CONTENT_QUEUE_SHEET_ID" workflows/ai-content-automation-public.json
+          grep -q "YOUR_PRODUCT_CATALOG_SHEET_ID" workflows/ai-content-automation-public.json
+
+      - name: Scan for common secret patterns
+        shell: bash
+        run: |
+          if grep -E -i '"(api[_-]?key|access[_-]?token|client[_-]?secret|password)"[[:space:]]*:[[:space:]]*"[^"]{8,}"' workflows/ai-content-automation-public.json; then
+            echo "Potential hard-coded secret detected."
+            exit 1
+          fi
