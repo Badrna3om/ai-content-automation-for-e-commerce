@@ -1,0 +1,936 @@
+{
+  "name": "AI Content Automation Workflow for Ecommerce",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_CONTENT_QUEUE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "Content Queue",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "YOUR_CONTENT_QUEUE_SHEET_URL#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=status",
+              "lookupValue": "=queued"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1200,
+        -176
+      ],
+      "id": "bab118ae-1471-49d8-a502-53f1ab9de87e",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "66415363-31ef-49aa-820f-88ecb29bd5d3",
+              "leftValue": "={{$json.row_number}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1008,
+        -176
+      ],
+      "id": "9e7ea0e4-5563-45e6-8a6f-c1b67b2e3c3b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=اكتب مقالًا عربيًا احترافيًا ومتوافقًا مع SEO عن الموضوع التالي:\n\n{{ $json.keyword }}\n\nالشروط:\n- طول المقال بين 900 و 1200 كلمة\n- عنوان رئيسي جذاب\n- مقدمة قصيرة\n- عناوين فرعية H2 و H3\n- فقرات مفيدة وغير مكررة\n- أسلوب عربي واضح وسلس\n- بدون ادعاءات طبية قطعية\n- مناسب لمدونة متجر إلكتروني\n- أضف خاتمة قصيرة تشجع القارئ على زيارة متجر بوعسكور\n\nأخرج المقال بصيغة HTML نظيفة فقط."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -784,
+        -192
+      ],
+      "id": "f0f2515e-13e2-478b-9c4a-9ff646e6d2dd",
+      "name": "Generate Article",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "options": {
+          "search": "={{ $node[\"Get row(s) in sheet\"].json.related_product }}"
+        }
+      },
+      "type": "n8n-nodes-base.wooCommerce",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -192
+      ],
+      "id": "b5436d7b-d2e1-4ff2-a82b-d29685c4b604",
+      "name": "Get Product From WooCommerce",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "WooCommerce account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.pexels.com/v1/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.search_query }}"
+            },
+            {
+              "name": "per_page",
+              "value": "2"
+            },
+            {
+              "name": "orientation",
+              "value": "landscape"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "REPLACE_WITH_PEXELS_API_KEY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -128,
+        -192
+      ],
+      "id": "f78aa8f2-9748-4a09-9cf8-fd395f11de0b",
+      "name": "Get 2 Free Images From Pexels"
+    },
+    {
+      "parameters": {
+        "jsCode": "const articleData = $node[\"Generate Article\"].json;\nconst sheetRow = $node[\"Get row(s) in sheet\"].json;\nconst productData = $node[\"Get Product From WooCommerce\"].json;\nconst pexelsData = $node[\"Get 2 Free Images From Pexels\"].json;\n\n// استخراج النص من نود Generate Article\nlet article = \"\";\n\nif (\n  articleData.output &&\n  Array.isArray(articleData.output) &&\n  articleData.output[0] &&\n  articleData.output[0].content &&\n  Array.isArray(articleData.output[0].content) &&\n  articleData.output[0].content[0] &&\n  articleData.output[0].content[0].text\n) {\n  article = articleData.output[0].content[0].text;\n}\n\n// إزالة ```html و ```\narticle = article\n  .replace(/^```html\\s*/i, \"\")\n  .replace(/^```\\s*/i, \"\")\n  .replace(/\\s*```$/i, \"\")\n  .trim();\n\n// إزالة هيكل الصفحة الكامل والإبقاء على محتوى المقال فقط\narticle = article\n  .replace(/<!DOCTYPE html[^>]*>/i, \"\")\n  .replace(/<html[^>]*>/i, \"\")\n  .replace(/<\\/html>/i, \"\")\n  .replace(/<head[\\s\\S]*?<\\/head>/i, \"\")\n  .replace(/<body[^>]*>/i, \"\")\n  .replace(/<\\/body>/i, \"\")\n  .trim();\n\n// صورة المنتج\nconst productImage =\n  productData.images &&\n  Array.isArray(productData.images) &&\n  productData.images[0]\n    ? productData.images[0].src\n    : \"\";\n\n// صور Pexels\nconst image1 =\n  pexelsData.photos &&\n  Array.isArray(pexelsData.photos) &&\n  pexelsData.photos[0]\n    ? pexelsData.photos[0].src.large\n    : \"\";\n\nconst image2 =\n  pexelsData.photos &&\n  Array.isArray(pexelsData.photos) &&\n  pexelsData.photos[1]\n    ? pexelsData.photos[1].src.large\n    : \"\";\n\n// بناء HTML النهائي\nconst html = `\n${productImage ? `<img src=\"${productImage}\" style=\"width:100%;border-radius:10px;\">` : \"\"}\n\n${article}\n\n${image1 ? `<img src=\"${image1}\" style=\"width:100%;margin-top:20px;border-radius:10px;\">` : \"\"}\n\n${image2 ? `<img src=\"${image2}\" style=\"width:100%;margin-top:20px;border-radius:10px;\">` : \"\"}\n`.trim();\n\n// استخراج التاقز من عنوان المقال + الكيوورد + البراند\nconst title = String(sheetRow.title || \"\").trim();\nconst keyword = String(sheetRow.keyword || \"\").trim();\n\nconst tags = [\n  \"بوعسكور\",\n  keyword,\n];\n\n// نضيف العنوان فقط إذا لم يكن طويلاً جداً\nif (title && title.length <= 45) {\n  tags.push(title);\n}\n\n// حذف التكرار والقيم الفارغة\nconst uniqueTags = [...new Set(tags.filter(Boolean))];\n\n// تحويلها إلى صيغة ووردبريس\nconst wp_tags = uniqueTags.map(tag => ({ name: tag }));\n\nreturn [\n  {\n    json: {\n      article_html: html,\n      wp_tags\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -192
+      ],
+      "id": "f409abb6-cce8-42cf-955c-5b93d3c4add9",
+      "name": "Prepare Article With Images"
+    },
+    {
+      "parameters": {
+        "title": "={{$node[\"Get row(s) in sheet\"].json.title}}",
+        "additionalFields": {
+          "content": "={{$node[\"Prepare Article With Images\"].json.article_html}}",
+          "slug": "={{$node[\"Get row(s) in sheet\"].json.keyword}}",
+          "status": "draft"
+        }
+      },
+      "type": "n8n-nodes-base.wordpress",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -192
+      ],
+      "id": "7a4834a2-a246-4de5-b051-6f7d112a83ec",
+      "name": "Create Draft Article",
+      "credentials": {
+        "wordpressApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "WordPress account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=مقال جديد Draft تم إنشاؤه\n\nالعنوان:\n{{$node[\"Get row(s) in sheet\"].json.title}}\nفتح المقال:\nhttps://YOUR_STORE_DOMAIN/wp-admin/post.php?post={{$json.id}}&action=edit",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        -192
+      ],
+      "id": "87a1941f-0136-4642-8f31-2dd0afc9e7db",
+      "name": "Notify New Draft",
+      "webhookId": "PUBLIC_WEBHOOK_ID",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_CONTENT_QUEUE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "Content Queue",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "YOUR_CONTENT_QUEUE_SHEET_URL#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{$node[\"Get row(s) in sheet\"].json.row_number}}",
+            "status": "=draft_created",
+            "wordpress_post_id": "={{$node[\"Create Draft Article\"].json.id}}",
+            "created_at": "={{new Date().toISOString()}}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "keyword",
+              "displayName": "keyword",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "article_html",
+              "displayName": "article_html",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "article_text",
+              "displayName": "article_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_token",
+              "displayName": "review_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approved_at",
+              "displayName": "approved_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "wordpress_post_id",
+              "displayName": "wordpress_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        -192
+      ],
+      "id": "c1bc6367-5f85-48c0-84e1-c4d3d43225a8",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1632,
+        96
+      ],
+      "id": "8c445db6-c9a0-49fd-8188-4159350cfc63",
+      "name": "Telegram Trigger",
+      "webhookId": "PUBLIC_WEBHOOK_ID",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c63fc5fc-4b4a-40d5-bbd5-8ad51e8f2f60",
+              "leftValue": "={{$json.message.text.toLowerCase()}}",
+              "rightValue": "مقال",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1456,
+        96
+      ],
+      "id": "f530b32d-ad6d-4a05-aab0-a50197b91c56",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// نص رسالة تيليجرام\nconst msg =\n  $node[\"Telegram Trigger\"].json.message?.text?.trim() || \"\";\n\n// نحذف كلمة post من البداية\nconst requestedName = msg.replace(/^post\\s*/i, \"\").trim();\n\n// فقط المنتجات النشطة\nconst active = items.filter(item => {\n  const v = String(item.json.active || \"\").toLowerCase().trim();\n  return v === \"yes\" || v === \"true\" || v === \"1\";\n});\n\nif (active.length === 0) {\n  throw new Error(\"No active products found\");\n}\n\n// لو المستخدم كتب اسم منتج بعد post\nif (requestedName) {\n  const exactMatch = active.find(item =>\n    String(item.json.product_name || \"\").trim() === requestedName\n  );\n\n  if (exactMatch) {\n    return [{\n      json: {\n        ...exactMatch.json,\n        selection_mode: \"manual\",\n        requested_name: requestedName\n      }\n    }];\n  }\n\n  const partialMatch = active.find(item =>\n    String(item.json.product_name || \"\")\n      .toLowerCase()\n      .includes(requestedName.toLowerCase())\n  );\n\n  if (partialMatch) {\n    return [{\n      json: {\n        ...partialMatch.json,\n        selection_mode: \"manual_partial\",\n        requested_name: requestedName\n      }\n    }];\n  }\n\n  throw new Error(`Product not found: ${requestedName}`);\n}\n\n// لو المستخدم كتب فقط post\n// نرتب حسب آخر استخدام\nconst sortedByLastUsed = [...active].sort((a, b) => {\n  const da = new Date(a.json.last_used_at || 0).getTime();\n  const db = new Date(b.json.last_used_at || 0).getTime();\n  return db - da;\n});\n\n// آخر منتج تم استخدامه\nconst lastUsedProductName = sortedByLastUsed[0]?.json?.product_name || \"\";\n\n// استبعاد آخر منتج إذا عندنا أكثر من منتج\nlet candidates = active;\nif (active.length > 1 && lastUsedProductName) {\n  candidates = active.filter(\n    item => String(item.json.product_name || \"\") !== lastUsedProductName\n  );\n}\n\n// اختيار الأقل استخداماً\ncandidates.sort((a, b) => {\n  const ta = Number(a.json.times_used || 0);\n  const tb = Number(b.json.times_used || 0);\n  return ta - tb;\n});\n\n// نأخذ أقل استخداماً\nconst selected = candidates[0];\n\nreturn [{\n  json: {\n    ...selected.json,\n    selection_mode: \"auto\",\n    requested_name: \"\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        272
+      ],
+      "id": "111ab80f-ada3-419e-8f2e-610f2c38d83e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a content agent for an Arabic e-commerce brand in the UAE.\n\nCreate one daily social media content for this product:\n\nProduct name: {{$json.product_name}}\nDescription: {{$json.short_desc}}\nImage: {{$json.image_url}}\nLink: {{$json.product_url}}\nPrice: {{$json.price}}\nOffer: {{$json.offer}}\nStyle: {{$json.style_note}}\n\nWrite in Arabic.\n\nOutput:\n- content_angle\n- image_prompt\n- instagram_caption\n- snap_caption\n- cta\n- hashtags\n\nReturn ONLY JSON:\n{\n  \"product_name\": \"\",\n  \"content_angle\": \"\",\n  \"image_prompt\": \"\",\n  \"instagram_caption\": \"\",\n  \"snap_caption\": \"\",\n  \"cta\": \"\",\n  \"hashtags\": [\"\", \"\", \"\"]\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -704,
+        272
+      ],
+      "id": "233bf39b-3efa-4166-904b-63aebd149337",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -736,
+        448
+      ],
+      "id": "354b8eb5-4563-4d1b-9009-1c9565ff477c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_PRODUCT_CATALOG_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "Product Catalog",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "YOUR_PRODUCT_CATALOG_SHEET_URL#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1184,
+        272
+      ],
+      "id": "40b82271-9b0a-46de-865a-2b42c0eb9518",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=📦 المنتج:\n{{ JSON.parse($json.text).product_name || JSON.parse($json.text).productname }}\n\n🎯 فكرة المحتوى:\n{{ JSON.parse($json.text).content_angle || JSON.parse($json.text).contentangle }}\n\n🖼️ برومبت الصورة:\n{{ JSON.parse($json.text).image_prompt || JSON.parse($json.text).imageprompt }}\n\n📸 كابشن إنستقرام:\n{{ JSON.parse($json.text).instagram_caption || JSON.parse($json.text).instagramcaption }}\n\n👻 كابشن سناب:\n{{ JSON.parse($json.text).snap_caption || JSON.parse($json.text).snapcaption }}\n\n📢 CTA:\n{{ JSON.parse($json.text).cta }}\n\n#️⃣ هاشتاقات:\n{{ JSON.parse($json.text).hashtags.join(' ') }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        272
+      ],
+      "id": "b118e123-9525-428f-9d83-e8e22d375f50",
+      "name": "Send a text message",
+      "webhookId": "PUBLIC_WEBHOOK_ID",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_PRODUCT_CATALOG_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "Product Catalog",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "YOUR_PRODUCT_CATALOG_SHEET_URL#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_used_at": "={{ new Date().toISOString() }}",
+            "times_used": "={{ Number($node[\"Code in JavaScript\"].json.times_used || 0) + 1 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "short_desc",
+              "displayName": "short_desc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "image_url",
+              "displayName": "image_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_url",
+              "displayName": "product_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "offer",
+              "displayName": "offer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "style_note",
+              "displayName": "style_note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_used_at",
+              "displayName": "last_used_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "times_used",
+              "displayName": "times_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -144,
+        272
+      ],
+      "id": "6043f9b7-4287-4774-9116-f417389d37e8",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $node[\"Get row(s) in sheet\"].json;\n\nconst title = String(row.title || \"\").toLowerCase();\nconst keyword = String(row.keyword || \"\").toLowerCase();\nconst relatedProduct = String(row.related_product || \"\").toLowerCase();\n\nconst text = `${title} ${keyword} ${relatedProduct}`;\n\nlet query = \"product lifestyle\";\n\n// قهوة\nif (text.includes(\"قهوة\") || text.includes(\"coffee\")) {\n  if (text.includes(\"تحضير\") || text.includes(\"طريقة\") || text.includes(\"هيل\")) {\n    query = \"traditional arabic coffee dallah serving\";\n  } else if (text.includes(\"فوائد\") || text.includes(\"صحة\") || text.includes(\"طاقة\")) {\n    query = \"arabic coffee beans dallah\";\n  } else if (text.includes(\"شقراء\")) {\n    query = \"light arabic coffee dallah\";\n  } else if (text.includes(\"سوداء\")) {\n    query = \"dark arabic coffee cup\";\n  } else {\n    query = \"traditional arabic coffee serving\";\n  }\n}\n\n// زيت السمسم\nelse if (text.includes(\"سمسم\") || text.includes(\"sesame\")) {\n  if (text.includes(\"طبخ\") || text.includes(\"استخدام\")) {\n    query = \"sesame oil cooking\";\n  } else {\n    query = \"sesame oil bottle\";\n  }\n}\n\n// كركديه\nelse if (text.includes(\"كركديه\") || text.includes(\"hibiscus\")) {\n  if (text.includes(\"بارد\")) {\n    query = \"hibiscus iced tea\";\n  } else {\n    query = \"hibiscus tea\";\n  }\n}\n\n// شاي\nelse if (text.includes(\"شاي\") || text.includes(\"tea\")) {\n  if (text.includes(\"عراقي\")) {\n    query = \"iraqi black tea\";\n  } else {\n    query = \"black tea cup\";\n  }\n}\n\nreturn [{\n  json: {\n    ...row,\n    search_query: query\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -192
+      ],
+      "id": "4d992f75-849c-4178-b2e9-4c4886fbd1f6",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Generate Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Article": {
+      "main": [
+        [
+          {
+            "node": "Get Product From WooCommerce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Product From WooCommerce": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get 2 Free Images From Pexels": {
+      "main": [
+        [
+          {
+            "node": "Prepare Article With Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Article With Images": {
+      "main": [
+        [
+          {
+            "node": "Create Draft Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Draft Article": {
+      "main": [
+        [
+          {
+            "node": "Notify New Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify New Draft": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get 2 Free Images From Pexels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "PUBLIC_VERSION_ID",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "nodeGroups": [],
+  "id": "PUBLIC_WORKFLOW_ID",
+  "tags": []
+}
