@@ -1,0 +1,16 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# n8n exports containing private data
+workflows/*-private.json
+workflows/*-production.json
+credentials/
+secrets/
+
+# Local files
+.DS_Store
+Thumbs.db
