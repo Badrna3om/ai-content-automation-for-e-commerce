@@ -6,6 +6,8 @@
 
 A practical n8n automation system that turns e-commerce product data into structured Arabic content for blogs and social media.
 
+[![Validate Public Workflow](https://github.com/Badrna3om/ai-content-automation-for-e-commerce/actions/workflows/validate-workflow.yml/badge.svg)](https://github.com/Badrna3om/ai-content-automation-for-e-commerce/actions/workflows/validate-workflow.yml)
+
 </div>
 
 ---
