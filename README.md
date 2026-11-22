@@ -1,14 +1,27 @@
+<p align="center"><strong>BADRELDIN — PRODUCTION AI PORTFOLIO</strong><br/><a href="https://github.com/Badrna3om">Profile</a> · <a href="https://github.com/Badrna3om/tactic-ai-media-platform">TACTIC / AMER</a> · <a href="https://github.com/Badrna3om/buaskoor-ai-commerce-platform">Commerce</a> · <a href="https://github.com/Badrna3om/ai-restaurant-operating-system">Restaurant</a> · <a href="https://github.com/Badrna3om/ai-content-automation-for-e-commerce">Marketing</a></p>
+
 <div align="center">
 
 # AI Content Automation for E-commerce
 
 ### SEO Articles · Product Content · WordPress Drafts · Telegram Control · Multi-Channel Marketing
 
-A practical n8n automation system that turns e-commerce product data into structured Arabic content for blogs and social media.
+An AI marketing-operations workflow combining Arabic SEO article drafts, product content, WordPress editorial review and Telegram-driven social marketing. This is a **sanitized public implementation**, not a production account or autonomous live publisher.
 
 [![Validate Public Workflow](https://github.com/Badrna3om/ai-content-automation-for-e-commerce/actions/workflows/validate-workflow.yml/badge.svg)](https://github.com/Badrna3om/ai-content-automation-for-e-commerce/actions/workflows/validate-workflow.yml)
 
 </div>
+
+---
+
+## Portfolio quick view
+
+**Arabic Content Operations · E-commerce**  
+[WordPress draft preview](images/wordpress-draft-demo.png) · [Telegram output](images/telegram-content-output-demo.png)
+
+**What this proves:** AI content pipeline design, content governance, CMS drafts and multi-channel publishing preparation.
+
+> **Disclosure:** The repository is for public technical review. Operating credentials, private infrastructure, customer data and confidential business logic are excluded.
 
 ---
 
