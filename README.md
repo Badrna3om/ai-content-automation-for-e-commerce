@@ -10,7 +10,7 @@
 
 [![Validate Public Workflow](https://github.com/Badrna3om/ai-content-automation-for-e-commerce/actions/workflows/validate-workflow.yml/badge.svg)](https://github.com/Badrna3om/ai-content-automation-for-e-commerce/actions/workflows/validate-workflow.yml)
 
-[**SEO workflow**](#workflow-1-seo-article-factory) · [**Product marketing workflow**](#workflow-2-product-marketing-generator) · [**Setup**](SETUP.md) · [**Portfolio**](https://github.com/Badrna3om)
+[**Case study and evidence**](CASE_STUDY.md) · [**SEO workflow**](#workflow-1-seo-article-factory) · [**Product marketing workflow**](#workflow-2-product-marketing-generator) · [**Setup**](SETUP.md) · [**Portfolio**](https://github.com/Badrna3om)
 
 </div>
 
