@@ -2,15 +2,43 @@
 
 <div align="center">
 
-# AI Content Automation for E-commerce
+![Content AI — Arabic Marketing Automation](assets/portfolio-hero.svg)
 
-### SEO Articles · Product Content · WordPress Drafts · Telegram Control · Multi-Channel Marketing
+### Two specialized n8n workflows: editorial SEO drafts and product social content
 
-An AI marketing-operations workflow combining Arabic SEO article drafts, product content, WordPress editorial review and Telegram-driven social marketing. This is a **sanitized public implementation**, not a production account or autonomous live publisher.
+**Sanitized workflow demonstration with illustrated outputs.** Content is delivered for editorial review, not represented as unattended publishing or a live performance result.
 
 [![Validate Public Workflow](https://github.com/Badrna3om/ai-content-automation-for-e-commerce/actions/workflows/validate-workflow.yml/badge.svg)](https://github.com/Badrna3om/ai-content-automation-for-e-commerce/actions/workflows/validate-workflow.yml)
 
+[**SEO workflow**](#workflow-1-seo-article-factory) · [**Product marketing workflow**](#workflow-2-product-marketing-generator) · [**Setup**](SETUP.md) · [**Portfolio**](https://github.com/Badrna3om)
+
 </div>
+
+## Two workflows. Two reviewable outputs.
+
+<table>
+<tr>
+<td align="center" width="50%"><img src="images/wordpress-draft-demo.png" width="385" alt="Illustrative Arabic WordPress SEO draft"/><br/><b>01 · AI-assisted SEO article draft</b><br/><sub>Sheets queue → OpenAI → product & image enrichment → WordPress draft → editorial review</sub></td>
+<td align="center" width="50%"><img src="images/telegram-content-output-demo.png" width="385" alt="Illustrative Telegram marketing content output"/><br/><b>02 · Structured product marketing package</b><br/><sub>Telegram trigger → product rotation → captions, CTA and hashtags → approval-ready delivery</sub></td>
+</tr>
+</table>
+
+*Both screenshots are labeled illustrative demonstrations in the source repository, **not** proven production customer results.*
+
+### Architecture and human oversight
+
+```mermaid
+flowchart LR
+  A["Google Sheets queue"] --> B["Arabic SEO generation"]
+  B --> C["WooCommerce / Pexels enrichment"]
+  C --> D["WordPress draft"]
+  D --> E["Human editorial review"]
+  F["Telegram request"] --> G["Catalog & rotation rules"]
+  G --> H["Product content package"]
+  H --> I["Telegram delivery"]
+```
+
+**Engineering proof:** published sanitized n8n export, separate production paths, explicit queue/usage state and a GitHub Actions workflow validator.
 
 ---
 
