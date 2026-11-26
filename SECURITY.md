@@ -26,3 +26,13 @@ This repository contains a sanitized workflow intended for portfolio review and 
 ## Reporting a Security Issue
 
 Please contact the repository owner privately rather than opening a public issue containing sensitive details.
+
+## Public Portfolio Review — 26 November 2026
+
+This repository's checked-out tracked files were inspected with a **bounded static scan** for common hard-coded GitHub, OpenAI, AWS, Telegram, JWT, private-key and Authorization token formats. No direct match was found in the inspected files. This is **not** a complete security assessment, a full Git-history audit, or proof that no sensitive operational details were ever published.
+
+**Deployment boundary:** Keep WordPress content as drafts for human review; treat AI HTML output and third-party enrichment as untrusted inputs.
+
+Do not push real credentials, customer transactions or deployment secrets into this public repo. A `.gitignore` helps prevent accidental future additions but **does not hide files already committed**. Rotate any credential discovered in a public commit or log.
+
+The public examples are designed for code review and demonstration. Operational deployments require separate environment review and verification.
